@@ -6,14 +6,14 @@
         "template_type":"generic",
         "elements":[
           {
-            "title":"600-800 Deluxe Roller",
+            "title":"Deluxe Roller - 600/800",
             "image_url":"http://shoppingcart.blindswholesale.com.au/image/thumbnails/18/76/13_budget_range_roller_blind_jpg-100198-350x350.jpg",
             "subtitle":"Budget Blockout is a 100% blockout fabric with...",
             "buttons":[
               {
                 "type":"web_url",
                 "url":"http://shoppingcart.blindswholesale.com.au/deluxe-roller-blind",
-                "title":"$104"
+                "title":"$109"
               },
               {
                 "type":"web_url",
@@ -23,14 +23,14 @@
             ]
           },
           {
-            "title":"600-800 Budget Range Roller",
+            "title":"Budget Range Roller - 600/800",
             "image_url":"http://shoppingcart.blindswholesale.com.au/image/thumbnails/18/76/7_standard_roller_blind_jpg-100199-350x350.jpg",
-            "subtitle":"Boston range of fabric is one of the most..",
+            "subtitle": "Boston range of fabric is one of the most.." ,
             "buttons":[
               {
                 "type":"web_url",
                 "url":"http://shoppingcart.blindswholesale.com.au/deluxe-roller-blind",
-                "title":"$90"
+                "title":"$103"
               },
               {
                 "type":"web_url",

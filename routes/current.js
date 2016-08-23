@@ -8,32 +8,6 @@ fs        = require('fs');
 // Our default file structure here
 data_JSON = './public/json/data.json';
 
-var calculate = require('../public/javascripts/calculate');
-
-
-
-function get( element ) {
-
-    var list = calculate.pricing();
-    for( var i = 0; i < list.length; i++ ) {
-        var element = list[i].dimension,
-            prices = list[i].price;
-
-        switch ( element ) {
-            case "600-600":
-                console.log( prices );
-                break;
-            case "600-800":
-                console.log( prices );
-                break;
-            default:
-                console.log("Something went wrong");
-        }
-    }
-}
-
-
-
 // /* GET home page. */
 var title = "Deluxe Roller",
     image_url = "http://shoppingcart.blindswholesale.com.au/image/thumbnails/18/76/13_budget_range_roller_blind_jpg-100198-350x350.jpg",
@@ -62,8 +36,6 @@ router.get('/', function(req, res) {
     heightT   = req.query.height;
     height    = numStrip(req.query.height);
 
-    console.log( "Not stripe" + widthT && heightT);
-    console.log( "Only accept number", width + " & the height of: " + height );
     dimension = width + "-" + height;
     filename = './json/' + dimension + '.json';
 
@@ -142,26 +114,25 @@ function invalidDimension() {
     return msg;
 }
 
+// function readFile(){
+//     var obj = "";
+//     // First load our local files here
+//     fs.readFile( data_JSON, 'utf8', function( err, data ){
+//         if(err) {
+//             throw new Error(err);
+//         }
+//         var list = JSON.parse(data);
+
+//         for(var i = 0; i < list.length; i++ ){
+//             obj += list[i].title;
+//             obj += list[i].subtitle;
+//         }
+//     });
+//     console.log( obj );
+// }
 
 // Create new queries here
-function createJSON() {
-
-    var obj = "";
-    // First load our local files here
-    fs.readFile( data_JSON, 'utf8', function( err, data ){
-        if(err) {
-            throw new Error(err);
-        }
-        var list = JSON.parse(data);
-
-        for(var i = 0; i < list.length; i++ ){
-            obj += list[i].title;
-            obj += list[i].subtitle;
-        }
-    });
-
-    console.log( obj );
-
+function createJSON( dimension, price ) {
 
     var args = {
         dimension: "600-600",
@@ -182,33 +153,57 @@ function createJSON() {
          */
         if (typeof a[i] == "object") {
             console.log("Is object! continuing...");
-            msg = [{
-                "attachment": {
-                    "type": "template",
-                    "payload": {
-                        "template_type": "generic",
-                        "elements": [{
-                            "title": a[i].title,
-                            "image_url": a[i].image_url,
-                            "subtitle": a[i].subtitle,
+
+            // This is our filelist
+
+            var itemList  = function(){
+
+                var itemList = "";
+
+                fs.readFile( data_JSON, 'utf8', function( err, data ){
+                    if(err) {
+                        throw new Error(err);
+                    }
+                    var list = JSON.parse(data);
+
+                    for(var i = 0; i < list.length; i++ ){
+                        itemList = {
+                            "title": list[i].title,
+                            "image_url": list[i].image_url,
+                            "subtitle": list[i].subtitle,
                             "buttons": [{
                                 "type": "web_url",
-                                "url": a[i].button_link,
-                                "title": a[i].button_price
+                                "url": a[i].price,
+                                "title": list[i].buttons[0].title
                             }, {
                                 "type": "web_url",
-                                "url": a[i].button_link,
-                                "title": a[i].button_title
+                                "url": list[i].buttons[1].url,
+                                "title": list[i].buttons[1].title
                             }]
-                        }]
+                        };
                     }
-                }
+                });
+                return itemList;
+            };
+
+            console.log("This is itemlist", itemList);
+            msg = [{
+                    "attachment": {
+                        "type": "template",
+                        "payload": {
+                            "template_type": "generic",
+                            "elements": [ itemList ]
+                        }
+                    }
             }];
 
             var file = JSON.stringify(msg);
+            console.log( "this is inline", file );
+
             var filename = './public/json/' + a[i].dimension + '.json';
 
             console.log( filename );
+
             // Store our write files here
             fs.writeFile( filename, file, 'utf8', function(err, data) {
                 if (err) {
@@ -216,10 +211,23 @@ function createJSON() {
                 }
                 console.log('Successfully created the file..');
             });
+
         } else {
             console.log("Not an object");
+            return args;
         }
     }
 }
+
+// function readContent(callback) {
+//     fs.readFile("./Index.html", function (err, content) {
+//         if (err) return callback(err)
+//         callback(null, content)
+//     })
+// }
+
+// readContent(function (err, content) {
+//     console.log(content)
+// })
 
 module.exports = router;

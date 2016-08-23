@@ -8,32 +8,6 @@ fs        = require('fs');
 // Our default file structure here
 data_JSON = './public/json/data.json';
 
-var calculate = require('../public/javascripts/calculate');
-
-
-
-function get( element ) {
-
-    var list = calculate.pricing();
-    for( var i = 0; i < list.length; i++ ) {
-        var element = list[i].dimension,
-            prices = list[i].price;
-
-        switch ( element ) {
-            case "600-600":
-                console.log( prices );
-                break;
-            case "600-800":
-                console.log( prices );
-                break;
-            default:
-                console.log("Something went wrong");
-        }
-    }
-}
-
-
-
 // /* GET home page. */
 var title = "Deluxe Roller",
     image_url = "http://shoppingcart.blindswholesale.com.au/image/thumbnails/18/76/13_budget_range_roller_blind_jpg-100198-350x350.jpg",

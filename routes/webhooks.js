@@ -1,254 +1,158 @@
-var request, express, router;
+/*
+    Specifications:
 
-request   = require('request');
-express   = require('express');
-router    = express.Router();
+    Customize quick quote implementation for blindswholesale.com.au
+    using facebook messenger to feed dynamic data for easy and advanced
+    shop experience.
 
-// Our default file structure here
-data_JSON = './public/json/data.json';
+    Project: Facebook messenger Chatbot
+    Website: http://shoppingcart.blindswholesale.com.au
+    Development: https://www.facebook.com/webriqdev
+    github: https://github.com/eljun/chatbot_blindswholesale
+    Developer: Eleazar Junsan
 
-var calculate = require('../public/javascripts/calculate');
-var product_pricing = calculate.productPricing();
-var baseUrl = "http://shoppingcart.blindswholesale.com.au/";
+    Tools:
+        - Chatfuel app
+        - Node environment
+        - Express js
 
-router.get('/', function(req, res, next) {
+    FEATURES:
+        - Dynamic data
+        - Easy to maintain
 
-    var maxWidth, minWidth, maxHeight, minHeight, width, height, dimension,  filename;
+    SOON:
+        - Advanced filtering for user quries
+
+ */
+
+var request, express, router, calculate, product_pricing, product_listing;
+
+request         = require('request'),
+express         = require('express'),
+router          = express.Router(),
+calculate       = require('../public/javascripts/calculate'),
+product_list    = require('../public/javascripts/product_list'),
+product_pricing = calculate.productPricing(),
+product_listing = product_list.productDefaultList();
+
+// Common properties
+baseUrl = "http://shoppingcart.blindswholesale.com.au/";
+
+var ext = this;
+
+router.get('/', function( req, res ) {
+
+    var maxWidth, minWidth, maxHeight, minHeight, width, height, params;
 
     maxWidth  = 2800;
     maxHeight = 3400;
-    width     = numStrip(req.query.width);
-    height    = numStrip(req.query.height);
-    calculate = width + "-" + height;
+    width     = ext.numStrip(req.query.width);
+    height    = ext.numStrip(req.query.height);
+    params    = width + "-" + height;
 
+    var text = "";
+
+    // Filter the request here
+    // More filters to come.....
+    if ( ( width && height ) > ( maxWidth && maxHeight ) ) {
+        res.status( 200 ).send( ext.invalidDimension() );
+
+    }
+
+    // Looping for our pricing table to match the query
+    // When match is found passed them to temp vars
     for( var i = 0; i < product_pricing.length; i++ ) {
-
-        // level - 1
-        console.log("passed level 1");
-
         var item_dimension  = product_pricing[i].dimension;
         var data            = product_pricing[i].data;
 
-        if( item_dimension == calculate ) {
-
-            switch( calculate ) {
-
-                case "600-600":
-                    res.send( recalc( data ));
-                    break;
-
-                case "600-800":
-                    res.send( recalc( data ));
-                    break;
-
-                case "600-1000":
-                    res.send( recalc( data ));
-                    break;
-
-                case "600-1400":
-                    res.send( recalc( data ));
-                    break;
-
-                default:
-                    console.log( "Impossible!" );
-                    break;
-            }
-        } else if ( req.status === 0 ) {
-            console.log("Failure!");
-            res.send([{"text" : "Sorry there seems to be a problem with your request..."}]);
+        // Display appropriate result base on user queries
+        // We should response with json
+        if( item_dimension == params ) {
+            text = data;
         }
     }
+
+    switch( text ) {
+        case text:
+            res.status( 200 ).send( ext.recalc( text ));
+            break;
+
+        default:
+            res.status( 200 ).send( ext.sendText() );
+            break;
+    }
+
 });
 
-function recalc( element ) {
+exports.recalc = function( element ) {
 
-    var product_list = {};
+    var arrayList    = [];
 
+    // Making sure that we only accept objects
+    // Other properties can be filtered if necessary
     if( typeof( element ) == "object" ){
+
+        // Match our secondary object to the result here
+        // If the match has been found then create new object
         for( var i = 0; i < element.length; i++ ){
 
-            var title = element[i].title,
-                price = element[i].price;
-
-            var budget, standard, deluxe, roman, visionwood50, visionwood63, cedar, aluminium25, aluminium50;
-
-            if( title == "budget-roller-blind" ) {
-                budget = price.toString();
-            }else if ( title == "standard-roller-blind") {
-                standard = price.toString();
-            }else if ( title == "deluxe-roller-blind") {
-                deluxe = price.toString();
-            }else if ( title == "roman-blind") {
-                roman = price.toString();
-            }else if ( title == "50mm-visionwood-venetian") {
-                visionwood50 = price.toString();
-            }else if ( title == "63mm-visionwood-venetian-blind") {
-                visionwood63 = price.toString();
-            }else if ( title == "cedar-venetian-blind") {
-                cedar = price.toString();
-            }else if ( title == "25mm-aluminium-venetian-blind") {
-                aluminium25 = price.toString();
-            }else if ( title == "50mm-aluminium-venetian") {
-                aluminium50 = price.toString();
-            } else {
-                product_list = calculate.productDefaultList();
-            }
-
-            product_list = [{
-                "attachment": {
-                    "type": "template",
-                    "payload": {
-                        "template_type": "generic",
-                        "elements": [
-                            {
-                                "title": "Budget Range Roller Blind",
-                                "image_url": baseUrl + "/resources/image/18/76/6.jpg",
-                                "subtitle": "Budget Blockout is a 100% blockout fabric",
-                                "buttons": [{
-                                    "type": "web_url",
-                                    "url": baseUrl + "budget-roller-blind",
-                                    "title": budget,
-                                }]
-                            },
-                            {
-                                "title": "Standard Roller Blind",
-                                "image_url": baseUrl + "/resources/image/18/79/5.jpg",
-                                "subtitle": "Woodlands is a smooth 1x1 plain weave made from 100% polyester yarn...",
-                                "buttons": [{
-                                    "type": "web_url",
-                                    "url": baseUrl + "standard-roller-blind",
-                                    "title": standard,
-                                }]
-                            },
-                            {
-                                "title": "Deluxe Roller Blind",
-                                "image_url": baseUrl + "/resources/image/18/76/7.jpg",
-                                "subtitle": "White LFChalk LFDune LFQuarry LFLava LFWhite LFPearl LFPutty LFStraw",
-                                "buttons": [{
-                                    "type": "web_url",
-                                    "url": baseUrl + "deluxe-roller-blind",
-                                    "title": deluxe,
-                                }]
-                            },
-                            {
-                                "title": "Roman Blind",
-                                "image_url": baseUrl + "/resources/image/18/76/9.jpg",
-                                "subtitle": "White BOPearl BOStraw BOPutty BODune BOLatte BOMocha BOPebble BOSeal..",
-                                "buttons": [{
-                                    "type": "web_url",
-                                    "url": baseUrl + "roman-blind",
-                                    "title": roman,
-                                }]
-                            },
-                            {
-                                "title": "50mm Visionwood Venetian",
-                                "image_url": baseUrl + "/resources/image/18/83/4.jpg",
-                                "subtitle": "Blinds Wholesale 50mm Visionwood Venetians",
-                                "buttons": [{
-                                    "type": "web_url",
-                                    "url": baseUrl + "50mm-visionwood-venetian",
-                                    "title": visionwood50,
-                                }]
-                            },
-                            {
-                                "title": "63mm Visionwood Venetian",
-                                "image_url": baseUrl + "/resources/image/18/83/4.jpg",
-                                "subtitle": "Our Visionwood Venetians are custom made ",
-                                "buttons": [{
-                                    "type": "web_url",
-                                    "url": baseUrl + "63mm-visionwood-venetian-blind",
-                                    "title": visionwood63,
-                                }]
-                            },
-                            {
-                                "title": "Cedar Venetian Blind",
-                                "image_url": baseUrl + "/resources/image/18/79/4.jpg",
-                                "subtitle": "Our timber venetian blinds are classical and elegant.",
-                                "buttons": [{
-                                    "type": "web_url",
-                                    "url": baseUrl + "cedar-venetian-blind",
-                                    "title": cedar,
-                                }]
-                            },
-                            {
-                                "title": "25mm Aluminium Venetian",
-                                "image_url": baseUrl + "/resources/image/18/83/5.jpg",
-                                "subtitle": "Blinds Wholesale offer the highest quality in Aluminium Venetians",
-                                "buttons": [{
-                                    "type": "web_url",
-                                    "url": baseUrl + "25mm-aluminium-venetian-blind",
-                                    "title": aluminium25,
-                                }]
-                            },
-                            {
-                                "title": "50mm Aluminium Venetian",
-                                "image_url": baseUrl + "/resources/image/18/82/f.jpg",
-                                "subtitle": "Blinds Wholesale offer the highest quality in Aluminium Venetians",
-                                "buttons": [{
-                                    "type": "web_url",
-                                    "url": baseUrl + "50mm-aluminium-venetian",
-                                    "title": aluminium50,
-                                }]
-                            }
-                        ]
-                    }
-                }
-            }];
-        }
-    } else {
-        console.log("Sorry can't tell.");
-    }
-    return product_list;
-}
-
-function anotherQuote() {
-    msg = [{
-        "attachment": {
-            "type": "template",
-            "payload": {
-                "template_type": "generic",
-                "elements": [
-                    {
-                        "title": "Do another quote",
-                        "subtitle": "Check for another product price range..",
-                        "buttons": [{
-                            "type": "show_block",
-                            "url": "Quote",
-                            "title": "Try again",
-                        }]
-                    }
-                ]
-            }
-        }
-    }];
-    return msg;
-}
-// Default incorrect dimension handler
-function invalidDimension() {
-    msg = [{
-        "attachment": {
-            "type": "template",
-            "payload": {
-                "template_type": "generic",
-                "elements": [{
-                    "title": "Opps",
-                    "subtitle": "Sorry dimension should be 600-3000 only.",
-                    "buttons": [{
-                        "type": "show_block",
-                        "block_name": "Quote",
-                        "title": "Try again"
-                    }]
+            // Only append product additional properties
+            // This will serve as our item wrapper
+            var obj = {
+                "buttons": [{
+                    "type": "web_url",
+                    "url": baseUrl +""+ element[i].url,
+                    "title": "$" + element[i].price.toString(),
+                },{
+                    "type": "web_url",
+                    "url": baseUrl +""+ element[i].url,
+                    "title": "View Product",
                 }]
+            };
+
+            // If true then return new object with addition properties
+            // Push the new object to our new object array
+            for( var b = 0; b < product_listing.length; b++ ) {
+                if( element[i].url == product_listing[b].url ) {
+                    obj.title     = product_listing[b].title;
+                    obj.image_url = baseUrl + product_listing[b].image_url;
+                    obj.subtitle  = product_listing[b].subtitle;
+                }
+            }
+            arrayList.push( obj );
+        }
+
+    } else {
+        // Don't remove this or perish
+        return ext.sendText();
+    }
+
+    // Facebook generic message struture
+    return [{
+        "attachment": {
+            "type": "template",
+            "payload": {
+                "template_type": "generic",
+                "elements": arrayList
             }
         }
     }];
-    return msg;
 }
+
+// Send text for unvalidated dimension
+exports.sendText = function() {
+    return [{"text": "There seems to be a problem with your query please try again. Note: try to use 600 instead of 652.55 and etc.."}];
+};
+
+// Default incorrect dimension handler
+exports.invalidDimension = function() {
+    return [{"text": "Sorry dimension should be at least 600min - 3400max only.."}];
+};
 
 // Strip queries to only accept number
-function numStrip( element ) {
+exports.numStrip = function( element ) {
     var data = element.replace(/\D/g, '');
     return Math.floor(data);
-}
+};
 
 module.exports = router;

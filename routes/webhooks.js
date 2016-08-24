@@ -1,126 +1,229 @@
-var request, express, router, fs, data_JSON;
+var request, express, router;
 
 request   = require('request');
 express   = require('express');
 router    = express.Router();
-fs        = require('fs');
 
 // Our default file structure here
 data_JSON = './public/json/data.json';
 
 var calculate = require('../public/javascripts/calculate');
+var product_pricing = calculate.productPricing();
+var baseUrl = "http://shoppingcart.blindswholesale.com.au/";
 
-
-
-function get( element ) {
-
-    var list = calculate.pricing();
-    for( var i = 0; i < list.length; i++ ) {
-        var element = list[i].dimension,
-            prices = list[i].price;
-
-        switch ( element ) {
-            case "600-600":
-                console.log( prices );
-                break;
-            case "600-800":
-                console.log( prices );
-                break;
-            default:
-                console.log("Something went wrong");
-        }
-    }
-}
-
-
-
-// /* GET home page. */
-var title = "Deluxe Roller",
-    image_url = "http://shoppingcart.blindswholesale.com.au/image/thumbnails/18/76/13_budget_range_roller_blind_jpg-100198-350x350.jpg",
-    subtitle = "Budget Blockout is a 100% blockout fabric with...";
-    button_link = "http://shoppingcart.blindswholesale.com.au/deluxe-roller-blind",
-    button_price = "$104",
-    button_price2 = "$204",
-    button_title = "View item";
-
-
-function numStrip( element ) {
-    var data = element.replace(/\D/g, '');
-    return Math.floor(data);
-}
-
-router.get('/', function(req, res) {
+router.get('/', function(req, res, next) {
 
     var maxWidth, minWidth, maxHeight, minHeight, width, height, dimension,  filename;
 
-    maxWidth  = "";
-    minWidth  = "";
-    maxHeight = "";
-    minHeight = "";
-    widthT    = req.query.width;
+    maxWidth  = 2800;
+    maxHeight = 3400;
     width     = numStrip(req.query.width);
-    heightT   = req.query.height;
     height    = numStrip(req.query.height);
+    calculate = width + "-" + height;
 
-    console.log( "Not stripe" + widthT && heightT);
-    console.log( "Only accept number", width + " & the height of: " + height );
-    dimension = width + "-" + height;
-    filename = './json/' + dimension + '.json';
+    for( var i = 0; i < product_pricing.length; i++ ) {
 
-    switch ( dimension ) {
-        case "1000-1500":
-            createJSON({
-                dimension: dimension,
-                title: title,
-                image_url: image_url,
-                subtitle: subtitle,
-                button_link: button_link,
-                button_price: "$161.00",
-                button_title: button_title
-            });
-            res.redirect( filename );
-            break;
+        // level - 1
+        console.log("passed level 1");
 
-        case "1200-1700":
-            createJSON({
-                dimension: dimension,
-                title: title,
-                image_url: image_url,
-                subtitle: subtitle,
-                button_link: button_link,
-                button_price: "$191.00",
-                button_title: button_title
-            });
-            res.redirect( filename );
-            break;
+        var item_dimension  = product_pricing[i].dimension;
+        var data            = product_pricing[i].data;
 
-        case "1400-1900":
-            createJSON({
-                dimension: dimension,
-                title: title,
-                image_url: image_url,
-                subtitle: subtitle,
-                button_link: button_link,
-                button_price: "$221.00",
-                button_title: button_title
-            });
-            res.redirect( filename );
-            break;
+        if( item_dimension == calculate ) {
 
-        case "600-700":
-            res.redirect("./json/" + dimension + ".json");
-            break;
+            switch( calculate ) {
 
-        case "600-800":
-            res.redirect("./json/" + dimension + ".json");
-            break;
+                case "600-600":
+                    res.send( recalc( data ));
+                    break;
 
-        default:
-            res.send( invalidDimension() );
+                case "600-800":
+                    res.send( recalc( data ));
+                    break;
+
+                case "600-1000":
+                    res.send( recalc( data ));
+                    break;
+
+                case "600-1400":
+                    res.send( recalc( data ));
+                    break;
+
+                default:
+                    console.log( "Impossible!" );
+                    break;
+            }
+        } else if ( req.status === 0 ) {
+            console.log("Failure!");
+            res.send([{"text" : "Sorry there seems to be a problem with your request..."}]);
+        }
     }
 });
 
+function recalc( element ) {
 
+    var product_list = {};
+
+    if( typeof( element ) == "object" ){
+        for( var i = 0; i < element.length; i++ ){
+
+            var title = element[i].title,
+                price = element[i].price;
+
+            var budget, standard, deluxe, roman, visionwood50, visionwood63, cedar, aluminium25, aluminium50;
+
+            if( title == "budget-roller-blind" ) {
+                budget = price.toString();
+            }else if ( title == "standard-roller-blind") {
+                standard = price.toString();
+            }else if ( title == "deluxe-roller-blind") {
+                deluxe = price.toString();
+            }else if ( title == "roman-blind") {
+                roman = price.toString();
+            }else if ( title == "50mm-visionwood-venetian") {
+                visionwood50 = price.toString();
+            }else if ( title == "63mm-visionwood-venetian-blind") {
+                visionwood63 = price.toString();
+            }else if ( title == "cedar-venetian-blind") {
+                cedar = price.toString();
+            }else if ( title == "25mm-aluminium-venetian-blind") {
+                aluminium25 = price.toString();
+            }else if ( title == "50mm-aluminium-venetian") {
+                aluminium50 = price.toString();
+            } else {
+                product_list = calculate.productDefaultList();
+            }
+
+            product_list = [{
+                "attachment": {
+                    "type": "template",
+                    "payload": {
+                        "template_type": "generic",
+                        "elements": [
+                            {
+                                "title": "Budget Range Roller Blind",
+                                "image_url": baseUrl + "/resources/image/18/76/6.jpg",
+                                "subtitle": "Budget Blockout is a 100% blockout fabric",
+                                "buttons": [{
+                                    "type": "web_url",
+                                    "url": baseUrl + "budget-roller-blind",
+                                    "title": budget,
+                                }]
+                            },
+                            {
+                                "title": "Standard Roller Blind",
+                                "image_url": baseUrl + "/resources/image/18/79/5.jpg",
+                                "subtitle": "Woodlands is a smooth 1x1 plain weave made from 100% polyester yarn...",
+                                "buttons": [{
+                                    "type": "web_url",
+                                    "url": baseUrl + "standard-roller-blind",
+                                    "title": standard,
+                                }]
+                            },
+                            {
+                                "title": "Deluxe Roller Blind",
+                                "image_url": baseUrl + "/resources/image/18/76/7.jpg",
+                                "subtitle": "White LFChalk LFDune LFQuarry LFLava LFWhite LFPearl LFPutty LFStraw",
+                                "buttons": [{
+                                    "type": "web_url",
+                                    "url": baseUrl + "deluxe-roller-blind",
+                                    "title": deluxe,
+                                }]
+                            },
+                            {
+                                "title": "Roman Blind",
+                                "image_url": baseUrl + "/resources/image/18/76/9.jpg",
+                                "subtitle": "White BOPearl BOStraw BOPutty BODune BOLatte BOMocha BOPebble BOSeal..",
+                                "buttons": [{
+                                    "type": "web_url",
+                                    "url": baseUrl + "roman-blind",
+                                    "title": roman,
+                                }]
+                            },
+                            {
+                                "title": "50mm Visionwood Venetian",
+                                "image_url": baseUrl + "/resources/image/18/83/4.jpg",
+                                "subtitle": "Blinds Wholesale 50mm Visionwood Venetians",
+                                "buttons": [{
+                                    "type": "web_url",
+                                    "url": baseUrl + "50mm-visionwood-venetian",
+                                    "title": visionwood50,
+                                }]
+                            },
+                            {
+                                "title": "63mm Visionwood Venetian",
+                                "image_url": baseUrl + "/resources/image/18/83/4.jpg",
+                                "subtitle": "Our Visionwood Venetians are custom made ",
+                                "buttons": [{
+                                    "type": "web_url",
+                                    "url": baseUrl + "63mm-visionwood-venetian-blind",
+                                    "title": visionwood63,
+                                }]
+                            },
+                            {
+                                "title": "Cedar Venetian Blind",
+                                "image_url": baseUrl + "/resources/image/18/79/4.jpg",
+                                "subtitle": "Our timber venetian blinds are classical and elegant.",
+                                "buttons": [{
+                                    "type": "web_url",
+                                    "url": baseUrl + "cedar-venetian-blind",
+                                    "title": cedar,
+                                }]
+                            },
+                            {
+                                "title": "25mm Aluminium Venetian",
+                                "image_url": baseUrl + "/resources/image/18/83/5.jpg",
+                                "subtitle": "Blinds Wholesale offer the highest quality in Aluminium Venetians",
+                                "buttons": [{
+                                    "type": "web_url",
+                                    "url": baseUrl + "25mm-aluminium-venetian-blind",
+                                    "title": aluminium25,
+                                }]
+                            },
+                            {
+                                "title": "50mm Aluminium Venetian",
+                                "image_url": baseUrl + "/resources/image/18/82/f.jpg",
+                                "subtitle": "Blinds Wholesale offer the highest quality in Aluminium Venetians",
+                                "buttons": [{
+                                    "type": "web_url",
+                                    "url": baseUrl + "50mm-aluminium-venetian",
+                                    "title": aluminium50,
+                                }]
+                            }
+                        ]
+                    }
+                }
+            }];
+        }
+    } else {
+        console.log("Sorry can't tell.");
+    }
+    return product_list;
+}
+
+function anotherQuote() {
+    msg = [{
+        "attachment": {
+            "type": "template",
+            "payload": {
+                "template_type": "generic",
+                "elements": [
+                    {
+                        "title": "Do another quote",
+                        "subtitle": "Check for another product price range..",
+                        "buttons": [{
+                            "type": "show_block",
+                            "url": "Quote",
+                            "title": "Try again",
+                        }]
+                    }
+                ]
+            }
+        }
+    }];
+    return msg;
+}
+// Default incorrect dimension handler
 function invalidDimension() {
     msg = [{
         "attachment": {
@@ -142,84 +245,10 @@ function invalidDimension() {
     return msg;
 }
 
-
-// Create new queries here
-function createJSON() {
-
-    var obj = "";
-    // First load our local files here
-    fs.readFile( data_JSON, 'utf8', function( err, data ){
-        if(err) {
-            throw new Error(err);
-        }
-        var list = JSON.parse(data);
-
-        for(var i = 0; i < list.length; i++ ){
-            obj += list[i].title;
-            obj += list[i].subtitle;
-        }
-    });
-
-    console.log( obj );
-
-
-    var args = {
-        dimension: "600-600",
-        title: "Delux Roller Blinds",
-        image_url: "http://shoppingcart.blindswholesale.com.au/image/thumbnails/18/76/13_budget_range_roller_blind_jpg-100198-350x350.jpg",
-        subtitle : "Budget Blockout is a 100% blockout fabric with...",
-        button_link : "http://shoppingcart.blindswholesale.com.au/deluxe-roller-blind",
-        button_price : "$104",
-        button_title : "View item"
-    };
-
-    var a = arguments;
-    for (var i = 0; i < a.length; a++) {
-
-        /* Send a generic message
-         * This is our object layout
-         * We should loop over from our
-         */
-        if (typeof a[i] == "object") {
-            console.log("Is object! continuing...");
-            msg = [{
-                "attachment": {
-                    "type": "template",
-                    "payload": {
-                        "template_type": "generic",
-                        "elements": [{
-                            "title": a[i].title,
-                            "image_url": a[i].image_url,
-                            "subtitle": a[i].subtitle,
-                            "buttons": [{
-                                "type": "web_url",
-                                "url": a[i].button_link,
-                                "title": a[i].button_price
-                            }, {
-                                "type": "web_url",
-                                "url": a[i].button_link,
-                                "title": a[i].button_title
-                            }]
-                        }]
-                    }
-                }
-            }];
-
-            var file = JSON.stringify(msg);
-            var filename = './public/json/' + a[i].dimension + '.json';
-
-            console.log( filename );
-            // Store our write files here
-            fs.writeFile( filename, file, 'utf8', function(err, data) {
-                if (err) {
-                    console.log("Sorry error has been found!");
-                }
-                console.log('Successfully created the file..');
-            });
-        } else {
-            console.log("Not an object");
-        }
-    }
+// Strip queries to only accept number
+function numStrip( element ) {
+    var data = element.replace(/\D/g, '');
+    return Math.floor(data);
 }
 
 module.exports = router;

@@ -6,7 +6,7 @@ for( var i; i < product_pricing.length; i++ ) {
 
 	var dimension 		= product_pricing[i].dimension;
 	var data   			= product_pricing[i].data;
-	var calc      		= "600-600";
+	var calc      		= "600-1400";
 	var product_name;
 
  	if( dimension == calc ) {
@@ -17,9 +17,14 @@ for( var i; i < product_pricing.length; i++ ) {
 			case "600-800":
 				recalc( data );
 				break;
+			case "600-1000":
+				recalc( data );
+				break;
+			case "600-1400":
+				recalc( data );
+				break;
 		}
 	}
-
 
 }
 
@@ -40,7 +45,7 @@ function recalc( element ) {
 
 			if( title == "budget-roller-blind" ) {
 				budget = price;
-			} else if ( title == "standard-roller-blind") {
+			}else if ( title == "standard-roller-blind") {
 				standard = price;
 			}else if ( title == "deluxe-roller-blind") {
 				deluxe = price;
@@ -131,7 +136,7 @@ function recalc( element ) {
 	} else {
 		console.log("Sorry can't tell.");
 	}
-
+	console.log( product_list );
 	return product_list;
 }
 

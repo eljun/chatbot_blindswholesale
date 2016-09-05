@@ -10,6 +10,7 @@
     Development: https://www.facebook.com/webriqdev
     github: https://github.com/eljun/chatbot_blindswholesale
     Developer: Eleazar Junsan
+    App version: 1.0
 
     Tools:
         - Chatfuel app
@@ -53,24 +54,27 @@ router.get('/', function( req, res ) {
     var text = "";
 
     // Filter the request here
-    // More filters to come.....
     if ( ( width && height ) > ( maxWidth && maxHeight ) ) {
         res.status( 200 ).send( ext.invalidDimension() );
 
     }
 
-    // Looping for our pricing table to match the query
-    // When match is found passed them to temp vars
+    /*  Looping for our pricing table to match the query
+        When match is found passed them to temp vars            */
+
     for( var i = 0; i < product_pricing.length; i++ ) {
         var item_dimension  = product_pricing[i].dimension;
         var data            = product_pricing[i].data;
 
-        // Display appropriate result base on user queries
-        // We should response with json
+        /*  Display appropriate result base on user queries
+            We should response with json                        */
         if( item_dimension == params ) {
             text = data;
         }
     }
+
+    /*  Only match items are being process
+        Adding more cases won't be necessary at this moment     */
 
     switch( text ) {
         case text:
@@ -88,16 +92,20 @@ exports.recalc = function( element ) {
 
     var arrayList    = [];
 
-    // Making sure that we only accept objects
-    // Other properties can be filtered if necessary
+    /*  Making sure that we only accept objects
+        Other properties can be filtered if necessary           */
+
     if( typeof( element ) == "object" ){
 
-        // Match our secondary object to the result here
-        // If the match has been found then create new object
+        /*  Match our secondary object to the result here
+            If the match has been found then create new object  */
+
         for( var i = 0; i < element.length; i++ ){
 
-            // Only append product additional properties
-            // This will serve as our item wrapper
+            /*  Only when match query is found that we
+                append additional product properties
+                to the object this will save memory.            */
+
             var obj = {
                 "buttons": [{
                     "type": "web_url",
@@ -110,8 +118,10 @@ exports.recalc = function( element ) {
                 }]
             };
 
-            // If true then return new object with addition properties
-            // Push the new object to our new object array
+            /*  If true then return new object with
+                addition properties push the new object
+                to our new object array.                        */
+
             for( var b = 0; b < product_listing.length; b++ ) {
                 if( element[i].url == product_listing[b].url ) {
                     obj.title     = product_listing[b].title;
@@ -137,7 +147,7 @@ exports.recalc = function( element ) {
             }
         }
     }];
-}
+};
 
 // Send text for unvalidated dimension
 exports.sendText = function() {

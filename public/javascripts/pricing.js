@@ -84,24 +84,24 @@ class ModelCatalogBlind extends Model {
 		} else if ( $product_id === "123" ) {
 			$price = $this->calculateBlind($this->getBlindData_50mmAluminiumVenetian(), $height, $width);
 		} else if ( $product_id === "122" ) {
-            $price = $this->calculateBlind($this->getBlindData_16mmMicroVenetian(), $height, $width);
-        } else if ( $product_id === "121" ) {
-            $price = $this->calculateBlind($this->getBlindData_25mmAluminiumVenetian(), $height, $width);
-        } else if ( $product_id === "116" ) {
-            $price = $this->calculateBlind($this->getBlindData_StandardRoller(), $height, $width);
-        } else if ( $product_id === "115" ) {
-            $price = $this->calculateBlind($this->getBlindData_VisionwoodVenetian(), $height, $width);
-        } else if ( $product_id === "114" ) {
-            $price = $this->calculateBlind($this->getBlindData_cedarVenetian(), $height, $width);
-        } else if ( $product_id === "126" ) {
-            $price = $this->calculateBlind($this->getBlindData_VisionwoodVenetian63mm(), $height, $width);
-        } else if ( $product_id === "111" ) {
-             // rbtm *s   choose the base price table for empire or regular fabric
-            if (in_array($fabric_type, $this->fabric_type, true) || in_array($fabric_type, $this->fabric_type_second, true)) {
-                 $price = $this->calculateBlind($this->getBlindData_Empire_BL(), $height, $width);
-            } else {
-                 $price = $this->calculateBlind($this->getBlindData_BudgetRoller(), $height, $width);
-            }
+      $price = $this->calculateBlind($this->getBlindData_16mmMicroVenetian(), $height, $width);
+    } else if ( $product_id === "121" ) {
+        $price = $this->calculateBlind($this->getBlindData_25mmAluminiumVenetian(), $height, $width);
+    } else if ( $product_id === "116" ) {
+        $price = $this->calculateBlind($this->getBlindData_StandardRoller(), $height, $width);
+    } else if ( $product_id === "115" ) {
+        $price = $this->calculateBlind($this->getBlindData_VisionwoodVenetian(), $height, $width);
+    } else if ( $product_id === "114" ) {
+        $price = $this->calculateBlind($this->getBlindData_cedarVenetian(), $height, $width);
+    } else if ( $product_id === "126" ) {
+        $price = $this->calculateBlind($this->getBlindData_VisionwoodVenetian63mm(), $height, $width);
+    } else if ( $product_id === "111" ) {
+         // rbtm *s   choose the base price table for empire or regular fabric
+        if (in_array($fabric_type, $this->fabric_type, true) || in_array($fabric_type, $this->fabric_type_second, true)) {
+             $price = $this->calculateBlind($this->getBlindData_Empire_BL(), $height, $width);
+        } else {
+             $price = $this->calculateBlind($this->getBlindData_BudgetRoller(), $height, $width);
+        }
             // rbtm *e done
 
         } else if ( $product_id === "112" ) {
@@ -117,7 +117,7 @@ class ModelCatalogBlind extends Model {
 		// Check passed height and width
         if ( $height < $data['height']['min'] || $height > $data['height']['max']
         ||   $width < $data['width']['min'] || $width > $data['width']['max'] ) {
-                return array();
+          return array();
         }
 
 		$prev=0;
@@ -248,7 +248,8 @@ private static function getBlindData_price_multiplier_two($orig_price) {
 	// rbtm *e
 
 
-    public function getBlindData_BudgetRoller_oldprice() { //rbtm just a backup of the old price table for budgetroller
+    public function getBlindData_BudgetRoller_oldprice() { 
+    //rbtm just a backup of the old price table for budgetroller
 
         $fabric = array(
             'height' =>

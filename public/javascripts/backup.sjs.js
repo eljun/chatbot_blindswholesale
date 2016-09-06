@@ -3,11 +3,6 @@ var _ = require('lodash');
 var ext = this;
 var fileSource = 'data.json';
 
-// Simple query
-var currentWidth = 600;
-var currentHeight = 600;
-var arr = [];
-
 exports.getBlindData_StandardRoller = function() {
     return [{
         "name": "standard-roller-blind",
@@ -194,89 +189,94 @@ exports.getBlindData_50mmAluminiumVenetian = function() {
     }]; // End of fabric
 };
 
+
+/*
+for( var i = 0; i < dataAll.length; i++ ){
+  var new_obj      = "";
+  var width        = dataAll[i].priceTable;
+  var product_name = dataAll[i].name;
+
+  for( var b = 0; b < width.length; b++ ) {
+    var d_w = width[b].width;
+    var d_h = width[b].height;
+    var obj = width[b];
+
+    for( var key in d_h ) {
+      var new_data = {
+        "dimension": obj['width'] +'-'+ key,
+        "data": [{
+          "url": product_name,
+          "price": d_h[key]
+        }]
+      };
+      new_obj = new_data;
+      var dd = JSON.stringify( new_obj );
+      arr.push( dd );
+      createJSON( arr );
+    }
+  }
+}*/
+
+var currentWidth = 600;
+var currentHeight = 600;
+var newPrice = "";
+var arr = [];
+
 // This triggers dimensional filter
 getBlindPrice( currentWidth, currentHeight );
 
 // Update product price accordingly
-function getBlindPrice( req_width, req_height ) {
+function getBlindPrice(req_width, req_height) {
 
     var all_blinds = ext.getBlindData_StandardRoller().concat(ext.getBlindData_50mmAluminiumVenetian());
-    var item_list = [];
-
-    /*  Looping all our blinds products and filter it
-        base on the dimension provided                  */
+    var price = [];
 
     for (var i = 0; i < all_blinds.length; i++) {
-
-        /*  All our blinds pricing table are merge into one
-            so we can easily loop over all the items    */
-
         var product_name = all_blinds[i];
-        item_list = calculateBlinds( product_name, req_width, req_height);
-
+        price = calculateBlinds( product_name, req_width, req_height);
     }
-
-    /*  Once we have the result from our loop
-        then we must response it with json output       */
-
-    var output = {
-        "dimensions": req_width +"-"+ req_height,
-        "data": item_list
-    }
-
-    var result = JSON.stringify( output );
 
     // All passed items will be added here
-    console.log( result );
-    createJSON( result )
+    console.log("Return data: ", price);
+    return price;
 }
 
 // Calculate our blinds base on dimensions
 function calculateBlinds(data, req_width, req_height) {
 
-    var blinds_list;
-    var minWidth  = parseInt(data.width[0].min);
-    var maxWidth  = parseInt(data.width[0].max);
+    var blinds_list = data.priceTable;
+    var minWidth = parseInt(data.width[0].min);
+    var maxWidth = parseInt(data.width[0].max);
     var minHeight = parseInt(data.height[0].min);
     var maxHeight = parseInt(data.height[0].max);
 
-
-    /*  Only items that matches the min & max
-        requirements are being process here                 */
-
-    if ( (req_width >= minWidth) && (req_width <= maxWidth) &&
+    if ((req_width >= minWidth) && (req_width <= maxWidth) &&
         (req_height >= minHeight) && (req_height <= maxHeight)) {
-        blinds_list = data;
+        return blinds_list;
     } else {
         return [{
             "Error": "No items found for that dimensions"
         }];
     }
+    /*for( var i = 0; i < data.length; i++ ) {
 
-    /*  The resulting items will then be filter
-        again base on the queried dimensions                */
+      var val  = data[i];
 
-    if ( typeof blinds_list == "object") {
+      var minWidth  = parseInt( val['width'][0].min );
+      var maxWidth  = parseInt( val['width'][0].max );
+      var minHeight = parseInt( val['height'][0].min );
+      var maxHeight = parseInt( val['height'][0].max );
 
-        var new_obj;
-        var p_n = blinds_list.name;
-        var p_p = blinds_list.priceTable;
-
-        // Loop over to our resulting entries
-        for (var key in p_p) {
-
-            if ( req_width == p_p[key]['width'] ) {
-                var new_data = {
-                        "url": p_n,
-                        "price": p_p[key]['height'][req_height]
-                    }
-                new_obj = new_data;
-            }
-        }
-        arr.push( new_obj );
-        return arr;
-    }
+      if( (req_width >= minWidth ) && (req_width <= maxWidth  ) &&
+        ( req_height >= minHeight  ) && ( req_height <= maxHeight  )){
+        console.log( val['name'] );
+        return val;
+      } else {
+        return [{"Error": "No items found for that dimensions"}];
+      }
+    }*/
 }
+
 
 // Create our files here
 function createJSON(element) {

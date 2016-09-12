@@ -3,6 +3,11 @@ var _ = require('lodash');
 var ext = this;
 var fileSource = 'data.json';
 
+// Simple query
+var currentWidth = 1000;
+var currentHeight = 600;
+var arr = [];
+
 exports.getBlindData_StandardRoller = function() {
     return [{
         "name": "standard-roller-blind",
@@ -82,7 +87,25 @@ exports.getBlindData_StandardRoller = function() {
                 "2800": "193",
                 "3000": "208",
             }
-        }]
+        }, {
+            "width": "2800",
+            "height": {
+                "600" : "260",
+                "800" : "270",
+                "1000" : "281",
+                "1200" : "296",
+                "1400" : "307",
+                "1600" : "318",
+                "1800" : "328",
+                "2000" : "345",
+                "2200" : "356",
+                "2400" : "367",
+                "2600" : "386",
+                "2800" : "397",
+                "3000" : "423",
+            }
+        }
+        ]
     }]
 }
 
@@ -185,98 +208,214 @@ exports.getBlindData_50mmAluminiumVenetian = function() {
                 "2850": " 142",
                 "3000": " 145",
             }
-        }]
+        }, {
+            "width": "1050",
+            "height": {
+                "300" : "95",
+                "600" : "95",
+                "750" : "98",
+                "900" : "101",
+                "1050" : "104",
+                "1200" : "110",
+                "1350" : "113",
+                "1500" : "117",
+                "1650" : "120",
+                "1800" : "123",
+                "1950" : "126",
+                "2100" : "129",
+                "2250" : "132",
+                "2400" : "135",
+                "2550" : "139",
+                "2700" : "142",
+                "2850" : "145",
+                "3000" : "148",
+            }
+        }, {
+            "width": "1200",
+            "height": {
+                "300" : "98",
+                "600" : "98",
+                "750" : "104",
+                "900" : "107",
+                "1050" : "110",
+                "1200" : "113",
+                "1350" : "117",
+                "1500" : "123",
+                "1650" : "126",
+                "1800" : "129",
+                "1950" : "132",
+                "2100" : "135",
+                "2250" : "142",
+                "2400" : "145",
+                "2550" : "148",
+                "2700" : "151",
+                "2850" : "154",
+                "3000" : "161",
+            }
+        }, {
+            "width": "3000",
+            "height": {
+                "300" : "145",
+                "600" : "145",
+                "750" : "154",
+                "900" : "164",
+                "1050" : "173",
+                "1200" : "183",
+                "1350" : "192",
+                "1500" : "202",
+                "1650" : "211",
+                "1800" : "217",
+                "1950" : "227",
+                "2100" : "236",
+                "2250" : "246",
+                "2400" : "255",
+                "2550" : "265",
+                "2700" : "274",
+                "2850" : "284",
+                "3000" : "293",
+            }
+        }
+
+        ]
     }]; // End of fabric
 };
 
-
-/*
-for( var i = 0; i < dataAll.length; i++ ){
-  var new_obj      = "";
-  var width        = dataAll[i].priceTable;
-  var product_name = dataAll[i].name;
-
-  for( var b = 0; b < width.length; b++ ) {
-    var d_w = width[b].width;
-    var d_h = width[b].height;
-    var obj = width[b];
-
-    for( var key in d_h ) {
-      var new_data = {
-        "dimension": obj['width'] +'-'+ key,
-        "data": [{
-          "url": product_name,
-          "price": d_h[key]
-        }]
-      };
-      new_obj = new_data;
-      var dd = JSON.stringify( new_obj );
-      arr.push( dd );
-      createJSON( arr );
-    }
-  }
-}*/
-
-var currentWidth = 600;
-var currentHeight = 600;
-var newPrice = "";
-var arr = [];
-
 // This triggers dimensional filter
-getBlindPrice( currentWidth, currentHeight );
+getBlindPrice(currentWidth, currentHeight);
 
 // Update product price accordingly
 function getBlindPrice(req_width, req_height) {
 
     var all_blinds = ext.getBlindData_StandardRoller().concat(ext.getBlindData_50mmAluminiumVenetian());
-    var price = [];
+    var item_list = [];
+
+    /*  Looping all our blinds products and filter it
+        base on the dimension provided                  */
 
     for (var i = 0; i < all_blinds.length; i++) {
+
+        /*  All our blinds pricing table are merge into one
+            so we can easily loop over all the items    */
+
         var product_name = all_blinds[i];
-        price = calculateBlinds( product_name, req_width, req_height);
+        item_list = calculateBlinds(product_name, req_width, req_height);
+
     }
 
+    /*  Once we have the result from our loop
+        then we must response it with json output       */
+
+    var output = {
+        "dimensions": req_width + "-" + req_height,
+        "data": item_list
+    }
+
+    var result = JSON.stringify(output);
+
     // All passed items will be added here
-    console.log("Return data: ", price);
-    return price;
+    console.log(result);
+    createJSON(result)
 }
 
 // Calculate our blinds base on dimensions
 function calculateBlinds(data, req_width, req_height) {
 
-    var blinds_list = data.priceTable;
+    var blinds_list;
     var minWidth = parseInt(data.width[0].min);
     var maxWidth = parseInt(data.width[0].max);
     var minHeight = parseInt(data.height[0].min);
     var maxHeight = parseInt(data.height[0].max);
 
+    /*  Only items that matches the min & max
+        requirements are being process here                 */
+
     if ((req_width >= minWidth) && (req_width <= maxWidth) &&
         (req_height >= minHeight) && (req_height <= maxHeight)) {
-        return blinds_list;
-    } else {
-        return [{
-            "Error": "No items found for that dimensions"
-        }];
+        blinds_list = data;
     }
-    /*for( var i = 0; i < data.length; i++ ) {
 
-      var val  = data[i];
+    /*  The resulting items will then be filter
+        again for proper pricing result                     */
 
-      var minWidth  = parseInt( val['width'][0].min );
-      var maxWidth  = parseInt( val['width'][0].max );
-      var minHeight = parseInt( val['height'][0].min );
-      var maxHeight = parseInt( val['height'][0].max );
+    if (typeof blinds_list == "object") {
 
-      if( (req_width >= minWidth ) && (req_width <= maxWidth  ) &&
-        ( req_height >= minHeight  ) && ( req_height <= maxHeight  )){
-        console.log( val['name'] );
-        return val;
-      } else {
-        return [{"Error": "No items found for that dimensions"}];
-      }
-    }*/
+        var new_obj;
+        var p_n = blinds_list.name;
+        var p_t = blinds_list.priceTable;
+        var prev = 0;
+
+        // Private vars
+        var currentWidth, nextWidth, prevWidth;
+        var filterWidth;
+        var width_i = 0;
+        for ( ; width_i < p_t.length; ) {
+            if ( req_width < p_t[width_i].width ) {
+                if( prev > 0 ) {
+                   filterWidth = prev;
+                } else {
+                   filterWidth =  p_t[width_i].width;
+                }
+                break;
+            }
+            else {
+                if( req_width == blinds_list.width['max'] ){
+                    filterWidth = pt[width_i].width;
+                }
+            }
+            prev = p_t[width_i].width;
+            width_i++;
+            if ( width_i == p_t ) {
+                filterWidth = pt[i].width;
+            }
+        }
+        // Loop over to our resulting entries
+        for ( var key in p_t ) {
+
+            var currentKey = p_t[key];
+            /*if ( req_width < currentKey.width ) {
+                if( req_width >= currentKey.width ) {
+                    currentWidth = {
+                        "url": p_n,
+                        "width" : currentKey['width'],
+                        "price" : currentKey['height'][req_height]
+                    }
+                } else {
+                    currentWidth = {
+                        "url": p_n,
+                        "width" : currentKey['width'],
+                        "price" : currentKey['height'][req_height]
+                    }
+                }
+                break;
+            }
+            else {
+                currentWidth = "gotcha";
+            }*/
+
+
+            /*if ( currentKey.width == req_width ) {
+
+                logger = "Current: " + key + "->" + p_t[ key ]['width'];
+                console.log( logger )
+
+                currentWidth = currentKey;
+                console.log( "test", currentKey['height'][req_height] );
+                nextWidth = nextKey;
+                prevWidth = prevKey;
+            }*/
+
+            /*if (req_width == p_t[key]['width']) {
+                var new_data = {
+                    "url": p_n,
+                    "price": p_t[key]['height'][req_height]
+                }
+                new_obj = new_data;
+            }*/
+        }
+        arr.push( filterWidth );
+        return arr;
+    }
 }
-
 
 // Create our files here
 function createJSON(element) {

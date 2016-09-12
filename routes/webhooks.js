@@ -26,119 +26,173 @@
 
  */
 
-var request, express, router, calculate, product_pricing, product_listing;
+var fs, request, express, router, product_listing, filteringItems, all_blinds;
 
+fs  = require('fs'),
 request         = require('request'),
 express         = require('express'),
 router          = express.Router(),
-calculate       = require('../public/javascripts/calculate'),
 product_list    = require('../public/javascripts/product_list'),
-product_pricing = calculate.productPricing(),
+filteringItems  = require('../public/javascripts/test'),
 product_listing = product_list.productDefaultList();
+// all_blinds      = filteringItems.mergeBlinds();
+
+var allFilesHere;
+var pricingGrids = require('../public/javascripts/pricingGrid');
+all_blinds      = pricingGrids.pricingGrid();
+
 
 // Common properties
 baseUrl = "http://shoppingcart.blindswholesale.com.au/";
-
 var ext = this;
 
 router.get('/', function( req, res ) {
 
-    var maxWidth, minWidth, maxHeight, minHeight, width, height, params;
+    var width, height;
 
-    maxWidth  = 2800;
-    maxHeight = 3400;
     width     = ext.numStrip(req.query.width);
     height    = ext.numStrip(req.query.height);
-    params    = width + "-" + height;
 
-    var text = "";
+    var item_list = [];
+    var arrayList  = [];
+    var product_name;
 
-    // Filter the request here
-    if ( ( width && height ) > ( maxWidth && maxHeight ) ) {
-        res.status( 200 ).send( ext.invalidDimension() );
+    /*  Looping all our blinds products and filter it
+        base on the dimension provided                  */
 
-    }
+    for (var i = 0; i < all_blinds.length; i++) {
 
-    /*  Looping for our pricing table to match the query
-        When match is found passed them to temp vars            */
+        /*  All our blinds pricing table are merge into one
+            so we can easily loop over all the items    */
 
-    for( var i = 0; i < product_pricing.length; i++ ) {
-        var item_dimension  = product_pricing[i].dimension;
-        var data            = product_pricing[i].data;
+        var product_name = all_blinds[i];
+        var filterWidth, filterHeight, productList;
 
-        /*  Display appropriate result base on user queries
-            We should response with json                        */
-        if( item_dimension == params ) {
-            text = data;
-        }
-    }
-
-    /*  Only match items are being process
+        /*  Only match items are being process
         Adding more cases won't be necessary at this moment     */
 
-    switch( text ) {
-        case text:
-            res.status( 200 ).send( ext.recalc( text ));
-            break;
+        var minWidth, maxWidth, minHeight, maxHeight;
+            minWidth = parseInt( product_name.width[0].min);
+            maxWidth = parseInt( product_name.width[0].max);
+            minHeight = parseInt( product_name.height[0].min);
+            maxHeight = parseInt( product_name.height[0].max);
 
-        default:
-            res.status( 200 ).send( ext.sendText() );
-            break;
+        /*  Only items that matches the min & max
+            requirements are being process here                 */
+
+        if (( width >= minWidth) && ( width <= maxWidth) &&
+            ( height >= minHeight) && ( height <= maxHeight)) {
+            // product_name = product_name;
+
+                if( typeof product_name == "object") {
+
+                var p_n, p_t, productPrice, prev, hprev, width_i, height_i;
+                    productPrice;
+                    p_n = product_name.name;
+                    p_t = product_name.priceTable;
+                    prev = 0;
+                    hprev = 0;
+                    width_i = 0;
+                    height_i = 0;
+
+                /*  Filter our width base on dimension
+                    if not found then search for next object        */
+
+                for (; width_i < p_t.length;) {
+                    if ( width < p_t[width_i].width) {
+                        if (prev > 0) {
+                            filterWidth = prev;
+                        } else {
+                            filterWidth = p_t[width_i].width;
+                        }
+                        break;
+                    } else {
+                        if ( width == product_name.width['max']) {
+                            filterWidth = p_t[width_i].width;
+                        }
+                    }
+                    prev = p_t[width_i].width;
+                    width_i++;
+                    if (width_i == p_t) {
+                        filterWidth = p_t[width_i].width;
+                    }
+                }
+
+                p_t.forEach(function(id, properties) {
+                    if (id.width == filterWidth) {
+                        for (; height_i < id.height.length;) {
+                            if ( height < Object.keys(id.height[height_i])) {
+                                if (hprev > 0) {
+                                    filterHeight = hprev;
+                                } else {
+                                    filterHeight = Object.keys(id.height[height_i]);
+                                    productList = p_n;
+                                }
+                                break;
+                            } else {
+                                if ( height == product_name.height['max']) {
+                                    filterHeight = Object.keys(id.height[height_i]);
+                                    productList = p_n;
+                                }
+                            }
+
+                            hprev = Object.keys(id.height[height_i]);
+                            productList = p_n;
+                            productPrice = id.height[height_i][hprev];
+                            height_i++;
+
+                            if (height_i == Object.keys(id.height[height_i])) {
+                                filterHeight = p_t[id];
+                            }
+                        }
+                    }
+                })
+
+                var new_data = {
+                    "url": productList,
+                    "price": productPrice
+                }
+                new_obj = new_data;
+                item_list.push( new_obj );
+            }
+        }
     }
 
-});
+    for( var q = 0; q < item_list.length; q++ ) {
 
-exports.recalc = function( element ) {
+        /*  Only when match query is found that we
+            append additional product properties
+            to the object this will save memory.            */
 
-    var arrayList    = [];
+        var obj = {
+            "buttons": [{
+                "type": "web_url",
+                "url": baseUrl +""+ item_list[q].url,
+                "title": "$" + item_list[q].price,
+            },{
+                "type": "web_url",
+                "url": baseUrl +""+ item_list[q].url,
+                "title": "View Product",
+            }]
+        };
 
-    /*  Making sure that we only accept objects
-        Other properties can be filtered if necessary           */
+        /*  If true then return new object with
+            addition properties push the new object
+            to our new object array.                        */
 
-    if( typeof( element ) == "object" ){
-
-        /*  Match our secondary object to the result here
-            If the match has been found then create new object  */
-
-        for( var i = 0; i < element.length; i++ ){
-
-            /*  Only when match query is found that we
-                append additional product properties
-                to the object this will save memory.            */
-
-            var obj = {
-                "buttons": [{
-                    "type": "web_url",
-                    "url": baseUrl +""+ element[i].url,
-                    "title": "$" + element[i].price.toString(),
-                },{
-                    "type": "web_url",
-                    "url": baseUrl +""+ element[i].url,
-                    "title": "View Product",
-                }]
-            };
-
-            /*  If true then return new object with
-                addition properties push the new object
-                to our new object array.                        */
-
-            for( var b = 0; b < product_listing.length; b++ ) {
-                if( element[i].url == product_listing[b].url ) {
-                    obj.title     = product_listing[b].title;
-                    obj.image_url = baseUrl + product_listing[b].image_url;
-                    obj.subtitle  = product_listing[b].subtitle;
-                }
+        for( var b = 0; b < product_listing.length; b++ ) {
+            if( item_list[q].url == product_listing[b].url ) {
+                obj.title     = product_listing[b].title;
+                obj.image_url = baseUrl + product_listing[b].image_url;
+                obj.subtitle  = product_listing[b].subtitle;
             }
-            arrayList.push( obj );
         }
 
-    } else {
-        // Don't remove this or perish
-        return ext.sendText();
+        arrayList.push( obj );
     }
 
     // Facebook generic message struture
-    return [{
+    var json = [{
         "attachment": {
             "type": "template",
             "payload": {
@@ -147,7 +201,12 @@ exports.recalc = function( element ) {
             }
         }
     }];
-};
+
+    console.log( json );
+    // Send our items
+    res.status( 200 ).send( json );
+
+});
 
 // Send text for unvalidated dimension
 exports.sendText = function() {
@@ -156,7 +215,7 @@ exports.sendText = function() {
 
 // Default incorrect dimension handler
 exports.invalidDimension = function() {
-    return [{"text": "Sorry dimension should be at least 600min - 3400max only.."}];
+    return [{"text": "Sorry dimension should be at least 001min - 3000max only.."}];
 };
 
 // Strip queries to only accept number
@@ -166,3 +225,4 @@ exports.numStrip = function( element ) {
 };
 
 module.exports = router;
+

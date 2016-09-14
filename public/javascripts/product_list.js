@@ -15,25 +15,25 @@ exports.productDefaultList = function(){
 		{
 			"title" : "Deluxe Roller Blind",
 			"image_url": "resources/image/18/76/7.jpg",
-			"subtitle": "White LFChalk LFDune LFQuarry LFLava LFWhite LFPearl LFPutty LFStraw",
+			"subtitle": "Our Deluxe Roller Blinds comes with many ranges..",
 			"url": "deluxe-roller-blind",
 		},
 		{
 			"title" : "Roman Blind",
 			"image_url": "resources/image/18/76/9.jpg",
-			"subtitle": "White BOPearl BOStraw BOPutty BODune BOLatte BOMocha BOPebble BOSeal..",
+			"subtitle": "Are chosen as the designer's favorite with their elegant & sleek",
 			"url": "roman-blind",
 		},
 		{
 			"title" : "50mm Visionwood Venetian",
 			"image_url": "resources/image/18/83/4.jpg",
-			"subtitle": "Blinds Wholesale 50mm Visionwood Venetians",
+			"subtitle": "Are stylish timber (look-a-like) blinds without the price tag.",
 			"url": "50mm-visionwood-venetian",
 		},
 		{
 			"title" : "63mm Visionwood Venetian",
 			"image_url": "resources/image/18/83/4.jpg",
-			"subtitle": "Our Visionwood Venetians are custom made ",
+			"subtitle": "Are stylish timber (look-a-like) blinds without the price tag.",
 			"url": "63mm-visionwood-venetian-blind",
 		},
 		{

@@ -50,8 +50,16 @@ router.get('/', function( req, res ) {
 
     var width, height;
 
+    maxWidth  = 3000;
+    maxHeight = 3000;
     width     = ext.numStrip(req.query.width);
     height    = ext.numStrip(req.query.height);
+
+
+    // Filter the request here
+    if ( ( width > maxWidth ) || ( height > maxHeight ) ) {
+        res.status( 200 ).send( ext.invalidDimension() );
+    }
 
     var item_list = [];
     var arrayList  = [];
@@ -215,7 +223,7 @@ exports.sendText = function() {
 
 // Default incorrect dimension handler
 exports.invalidDimension = function() {
-    return [{"text": "Sorry dimension should be at least 001min - 3000max only.."}];
+    return [{"text": "Sorry the maximum width & height should not exceed by 3000."}];
 };
 
 // Strip queries to only accept number
